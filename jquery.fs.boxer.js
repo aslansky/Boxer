@@ -1,5 +1,5 @@
 /* 
- * Boxer v3.3.0 - 2014-11-25 
+ * Boxer v3.3.0 - 2014-12-18 
  * A jQuery plugin for displaying images, videos or content in a modal overlay. Part of the Formstone Library. 
  * http://formstone.it/boxer/ 
  * 
@@ -18,6 +18,8 @@
 	/**
 	 * @options
 	 * @param callback [function] <$.noop> "Funciton called after opening instance"
+	 * @param closeOnEscape [boolean] <true> "Close when ESC key is pressed"
+	 * @param closeOnOverlayClick [boolean] <true> "Close when the overlay is clicked"
 	 * @param customClass [string] <''> "Class applied to instance"
 	 * @param extensions [array] <"jpg", "sjpg", "jpeg", "png", "gif"> "Image type extensions"
 	 * @param fixed [boolean] <false> "Flag for fixed positioning"
@@ -39,6 +41,8 @@
 	 */
 	var options = {
 		callback: $.noop,
+		closeOnEscape: true,
+		closeOnOverlayClick: true,
 		customClass: "",
 		extensions: [ "jpg", "sjpg", "jpeg", "png", "gif" ],
 		fixed: false,
@@ -307,8 +311,13 @@
 			data.$window.on("resize.boxer", pub.resize)
 						.on("keydown.boxer", onKeypress);
 
-			data.$body.on("touchstart.boxer click.boxer", "#boxer-overlay, #boxer .boxer-close", onClose)
+			data.$body.on("touchstart.boxer click.boxer", "#boxer .boxer-close", onClose)
 					  .on("touchmove.boxer", killEvent);
+
+			if (data.closeOnOverlayClick) {
+				data.$body.on("touchstart.boxer click.boxer", "#boxer-overlay", onClose)
+				.on("touchmove.boxer", killEvent);
+			}
 
 			if (data.gallery.active) {
 				data.$boxer.on("touchstart.boxer click.boxer", ".boxer-control", advanceGallery);
@@ -921,7 +930,7 @@
 			killEvent(e);
 
 			data.$controls.filter((e.keyCode === 37) ? ".previous" : ".next").trigger("click");
-		} else if (e.keyCode === 27) {
+		} else if (e.keyCode === 27 && data.closeOnEscape) {
 			data.$boxer.find(".boxer-close").trigger("click");
 		}
 	}
